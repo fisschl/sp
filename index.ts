@@ -1,40 +1,38 @@
-import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
-import { reactive, ref, watch } from "vue";
+import { Ref, onBeforeUnmount, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
+/**
+ * 将数据同步到 URL 中
+ * @param data 数据源
+ * @param onPopState 返回时触发
+ */
 export const useSearchParam = <T extends Record<string, any>>(
-  defaultParams: T
+  data: Ref<T>,
+  onPopState?: (data: T) => void
 ) => {
-  const params = reactive(defaultParams);
-
   const route = useRoute();
   const router = useRouter();
 
-  const text = ref("");
-
   const up = () => {
-    const param = JSON.stringify(params);
-    if (param === text.value) return;
-    text.value = param;
-    router.replace({
-      path: route.path,
-      query: { param: text.value },
-    });
+    const param = JSON.stringify(data.value);
+    router.replace({ path: route.path, query: { param } });
   };
 
   const down = (r = route) => {
     const { param } = r.query;
-    if (param === text.value) return;
     if (!param || typeof param !== "string") return;
-    text.value = param;
-    Object.keys(params).forEach((key) => delete params[key]);
-    Object.assign(params, JSON.parse(param));
+    data.value = JSON.parse(param);
   };
 
   route.query.param ? down() : up();
 
-  onBeforeRouteUpdate((to) => down(to));
+  watch(data, up, { deep: true });
 
-  watch(params, up, { deep: true });
+  const handlePopState = () => {
+    down();
+    if (onPopState) onPopState(data.value);
+  };
 
-  return params;
+  onMounted(() => addEventListener("popstate", handlePopState));
+  onBeforeUnmount(() => removeEventListener("popstate", handlePopState));
 };

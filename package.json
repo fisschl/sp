@@ -1,14 +1,13 @@
 {
   "name": "@fisschl/sp",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "type": "module",
+  "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "vue": "^3.3.9",
     "vue-router": "^4.2.5"
